@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const joi = require('joi');
+const jwt = require('jsonwebtoken');
 
 const User = require('../models/userModel');
 
@@ -10,7 +11,7 @@ const register = async (req, res) => {
 
         const salt = await bcrypt.genSalt(Number(process.env.SALT));
 
-        const { name, email, password } = req.body;
+        const { username, email, password } = req.body;
 
 
         const userExists = await User.findOne({ email: email });
@@ -22,7 +23,7 @@ const register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const createUser = new User ({  
-            name,
+            username,
             email,
             password: hashedPassword,
         });
@@ -40,7 +41,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
     try{
 
-        console.log(req.body)
+        // console.log(req.body)
         const { error } = validateLogin(req.body);
         if (error) return res.status(400).send(error.details[0].message);
 
@@ -59,7 +60,14 @@ const login = async (req, res) => {
             return res.status(404).send({message:"Email/Password doesnot match"})
         }
 
-        return res.status(200).send({message: 'User Logged in'});
+        const userData = {
+            _id: alreadyUser._id,
+            username: alreadyUser.username,
+            email: alreadyUser.email
+        }
+        const jwtToken = jwt.sign(userData,process.env.JWTPRIVATEKEY);
+
+        return res.status(200).send({message: 'User Logged in', token: jwtToken});
 
     }catch(error){
         console.log(error);
@@ -78,7 +86,7 @@ const validateLogin = (user) => {
 
 const validateRegister = (user) => {
     const schema = joi.object({
-        name: joi.string().required(),
+        username: joi.string().required(),
         email: joi.string().email().required(),
         password: joi.string().required(),
     });

@@ -1,8 +1,8 @@
 const path = require('path');
-const fs = require('fs');
 const multer = require('multer');
 
 const File = require('../models/fileModel');
+const User = require('../models/userModel');
 
 
 const fileUpload = async (req, res) => {
@@ -25,7 +25,11 @@ const fileUpload = async (req, res) => {
         
         const newFiles = new File(fileData);
 
-        await newFiles.save();
+        const result = await newFiles.save();
+        let fileId = result._id;
+
+        const updateResult = await User.updateOne({_id: req.user._id}, {$push:{files: fileId}});
+
         return res.status(201).send({message: 'File uploaded'});
 
     }catch(err){
@@ -33,7 +37,15 @@ const fileUpload = async (req, res) => {
     }
 }
 
+const getFilesById = async (req, res) => {
+    try {
+        const result = await User.findById(req.user._id).populate('files').exec();
 
+        res.send(result);
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -46,7 +58,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: {fileSize: '5000'},
+    limits: {fileSize: 500000 },
     fileFilter: (req, file, cb) => {
         const fileTypes = /jpeg|jpg|png/
         const mimeType = fileTypes.test(fileTypes)
@@ -56,8 +68,12 @@ const upload = multer({
             return cb(null, true)
         }
         cb('Please provide proper file format')
-    }
+    },
+    onError : function(err, next) {
+        console.log('error', err);
+        next(err);
+      }
 });
 
-module.exports = { fileUpload, upload };
+module.exports = { fileUpload, upload, getFilesById };
 

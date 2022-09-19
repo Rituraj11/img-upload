@@ -15,7 +15,6 @@ exports.initializePassport = (passport) => {
 
     passport.use( new JwtStrategy(opts, async (jwtPayload, done) => {
         try {
-            // console.log('jwt strategy data',jwtPayload)
             const user = await User.findOne({ email: jwtPayload.email });
 
             if(!user) return done(null, false);
@@ -44,21 +43,3 @@ exports.initializePassport = (passport) => {
     //     }
     // });
 }
-
-exports.isAuthenticated = (req, res, next) => {
-    console.log(req.headers)
-    next()
-}
-
-exports.getToken = (headers) => {
-    if (headers && headers.authorization) {
-      var parted = headers.authorization.split(' ');
-      if (parted.length === 2) {
-        return parted[1];
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  };

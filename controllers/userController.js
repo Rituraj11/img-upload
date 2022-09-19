@@ -15,7 +15,6 @@ const fileUpload = async (req, res) => {
         });
     }
 
-    console.log(req.body.name,paths.toString(), req.user )
     try{  
 
         let fileData = {
@@ -23,7 +22,6 @@ const fileUpload = async (req, res) => {
             file: paths.toString(),
             userId: req.user
         }
-
         
         const newFiles = new File(fileData);
 

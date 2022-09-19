@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const passport = require('passport');
-const expressSession = require('express-session');
 const { initializePassport } = require('./passport-config');
 
 const { connectMongo } = require('./db');
@@ -13,9 +12,7 @@ connectMongo();
 
 initializePassport(passport);
 
-// app.use(expressSession({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
-// app.use(passport.session());
 
 app.set('view engine', 'ejs');
 

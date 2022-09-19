@@ -6,20 +6,11 @@ const User = require('../models/userModel');
 
 
 const fileUpload = async (req, res) => {
-
-    let paths = [];
-
-    if(req.files.length !== 0){
-        req.files.map(file => {
-            paths.push(file.path)
-        });
-    }
-
+    
     try{  
-
         let fileData = {
             name: req.body.name,
-            file: paths.toString(),
+            file: req.file.path.toString(),
             userId: req.user
         }
         
@@ -60,20 +51,17 @@ const upload = multer({
     storage: storage,
     limits: {fileSize: 500000 },
     fileFilter: (req, file, cb) => {
+        console.log(file)
         const fileTypes = /jpeg|jpg|png/
         const mimeType = fileTypes.test(fileTypes)
         const extname = fileTypes.test(path.extname(file.originalname))
 
-        if(fileTypes && mimeType){
-            return cb(null, true)
+        if(file.mimetype ==='image/jpeg' || file.mimetype === 'image/jpg' || file.mimetype === 'image/png'){
+            return cb(null, true);
         }
-        cb('Please provide proper file format')
-    },
-    onError : function(err, next) {
-        console.log('error', err);
-        next(err);
-      }
-});
+        cb('Please provide proper file format');
+    }
+}).single('file');
 
 module.exports = { fileUpload, upload, getFilesById };
 
